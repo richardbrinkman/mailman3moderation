@@ -24,7 +24,18 @@ if __name__ == '__main__':
                 choice = input('b: show body, h: show header, s: skip, a: accept, r: reject, d: discard: ')
                 if choice == 'b':
                     msg = email.message_from_string(message.msg)
-                    payload = str(msg.get_payload(decode=True))
+                    if msg.is_multipart():
+                        parts = msg.get_payload()
+                        text_parts = [part for part in parts if part.get_content_type() == 'text/plain']
+                        if text_parts:
+                            msg = text_parts[0]
+                        else:
+                            html_parts = [part for part in parts if part.get_content_type() == 'text/html']
+                            if html_parts:
+                                msg = html_parts[0]
+                    payload = msg.get_payload(decode=True)
+                    if isinstance(payload, bytes):
+                        payload = payload.decode()
                     if msg.get_content_type() == 'text/html':
                         payload = html2text.html2text(payload)
                     pydoc.pager(payload)
