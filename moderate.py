@@ -1,3 +1,5 @@
+import email
+import html2text
 import mailmanclient
 import pydoc
 
@@ -17,11 +19,18 @@ if __name__ == '__main__':
             print('Sender:', message.sender)
             print('Subject:', message.subject)
             print('Reason:', message.reason)
-            choice = input('m: show message, s: skip, a: accept, r: reject, d: discard: ')
             action = None
             while action is None:
-                if choice == 'm':
-                    pydoc.pager(message.msg)
+                choice = input('b: show body, h: show header, s: skip, a: accept, r: reject, d: discard: ')
+                if choice == 'b':
+                    msg = email.message_from_string(message.msg)
+                    payload = str(msg.get_payload(decode=True))
+                    if msg.get_content_type() == 'text/html':
+                        payload = html2text.html2text(payload)
+                    pydoc.pager(payload)
+                elif choice == 'h':
+                    msg = email.message_from_string(message.msg)
+                    pydoc.pager('\n'.join(f'{key}: {value}' for key, value in msg.items()))
                 elif choice == 's':
                     action = 'skip'
                     comment = None
@@ -38,3 +47,4 @@ if __name__ == '__main__':
                     print('Illegal choice')
             if action != 'skip':
                 message.moderate(action, comment)
+                print()
