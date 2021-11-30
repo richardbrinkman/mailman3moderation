@@ -4,13 +4,31 @@ import mailmanclient
 import pydoc
 
 
-if __name__ == '__main__':
+def extract_part(parts, content_type='text/plain'):
+    content_parts = [part for part in parts if part.get_content_type() == content_type]
+    if content_parts:
+        return content_parts[0]
+
+
+def show_message_body(message):
+    msg = email.message_from_string(message.msg)
+    if msg.is_multipart():
+        parts = msg.get_payload()
+        msg = extract_part(parts, 'text/plain') or extract_part(parts, 'text/html')
+    payload = msg.get_payload(decode=True)
+    if isinstance(payload, bytes):
+        payload = payload.decode()
+    if msg.get_content_type() == 'text/html':
+        payload = html2text.html2text(payload)
+    pydoc.pager(payload)
+
+
+def run():
     try:
         from config import url, password, user
     except ImportError:
         print('Create a config.py file with url, user and password variables')
-        quit(1)
-
+        return
     client = mailmanclient.Client(url, user, password)
     for maillist in client.lists:
         for message in maillist.held:
@@ -20,42 +38,29 @@ if __name__ == '__main__':
             print('Subject:', message.subject)
             print('Reason:', message.reason)
             action = None
+            comment = None
             while action is None:
                 choice = input('b: show body, h: show header, s: skip, a: accept, r: reject, d: discard: ')
                 if choice == 'b':
-                    msg = email.message_from_string(message.msg)
-                    if msg.is_multipart():
-                        parts = msg.get_payload()
-                        text_parts = [part for part in parts if part.get_content_type() == 'text/plain']
-                        if text_parts:
-                            msg = text_parts[0]
-                        else:
-                            html_parts = [part for part in parts if part.get_content_type() == 'text/html']
-                            if html_parts:
-                                msg = html_parts[0]
-                    payload = msg.get_payload(decode=True)
-                    if isinstance(payload, bytes):
-                        payload = payload.decode()
-                    if msg.get_content_type() == 'text/html':
-                        payload = html2text.html2text(payload)
-                    pydoc.pager(payload)
+                    show_message_body(message)
                 elif choice == 'h':
                     msg = email.message_from_string(message.msg)
                     pydoc.pager('\n'.join(f'{key}: {value}' for key, value in msg.items()))
                 elif choice == 's':
                     action = 'skip'
-                    comment = None
                 elif choice == 'a':
                     action = 'accept'
-                    comment = None
                 elif choice == 'r':
                     action = 'reject'
                     comment = input('Reason to reject: ')
                 elif choice == 'd':
                     action = 'discard'
-                    comment = None
                 else:
                     print('Illegal choice')
             if action != 'skip':
                 message.moderate(action, comment)
                 print()
+
+
+if __name__ == '__main__':
+    run()
