@@ -12,9 +12,9 @@ def extract_part(parts, content_type='text/plain'):
 
 def show_message_body(message):
     msg = email.message_from_string(message.msg)
-    if msg.is_multipart():
+    while msg.is_multipart():
         parts = msg.get_payload()
-        msg = extract_part(parts, 'text/plain') or extract_part(parts, 'text/html')
+        msg = extract_part(parts, 'text/plain') or extract_part(parts, 'text/html') or extract_part(parts, 'multipart/alternative')
     payload = msg.get_payload(decode=True)
     if isinstance(payload, bytes):
         payload = payload.decode()
