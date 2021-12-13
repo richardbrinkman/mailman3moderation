@@ -14,7 +14,7 @@ def show_message_body(message):
     msg = email.message_from_string(message.msg)
     while msg.is_multipart():
         parts = msg.get_payload()
-        msg = extract_part(parts, 'text/plain') or extract_part(parts, 'text/html') or extract_part(parts, 'multipart/alternative')
+        msg = extract_part(parts, 'text/plain') or extract_part(parts, 'text/html') or extract_part(parts, 'multipart/alternative') or extract_part(parts, 'multipart/related')
     payload = msg.get_payload(decode=True)
     if isinstance(payload, bytes):
         payload = payload.decode()
