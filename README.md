@@ -19,15 +19,18 @@ This Python script is a similar tool for version 3 of Mailman.
 
 ## Installation
 
-Simply clone this tool from github by invoking this command in a shell:
+Simply clone this tool from github by invoking these commands in a shell:
 
 ```sh
 git clone https://github.com/richardbrinkman/mailman3moderation.git
+cd mailman3moderation
+pip3 install -r requirements.txt
+cp config_sample.py config.py
 ```
 
 It will create a mailman3moderation directory in the current directory with the script
-itself (`moderate.py`) and a sample configuration script (`config_sample.py`). Copy the latter
-to a new file called `config.py` and adjust the settings within it.
+itself (`moderate.py`) and a sample configuration script (`config_sample.py`) and installs
+the required dependencies. Edit the file `config.py` and adjust the settings within it.
 
 ## Usage
 
