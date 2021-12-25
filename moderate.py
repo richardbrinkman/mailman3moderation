@@ -17,7 +17,7 @@ def show_message_body(message):
         msg = extract_part(parts, 'text/plain') or extract_part(parts, 'text/html') or extract_part(parts, 'multipart/alternative') or extract_part(parts, 'multipart/related')
     payload = msg.get_payload(decode=True)
     if isinstance(payload, bytes):
-        payload = payload.decode()
+        payload = payload.decode(msg.get_content_charset('utf-8'))
     if msg.get_content_type() == 'text/html':
         payload = html2text.html2text(payload)
     pydoc.pager(payload)
